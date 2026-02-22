@@ -1,0 +1,99 @@
+#
+# ===========================================
+# MONITORING STACK
+# ===========================================
+#
+# Prometheus + Grafana = le combo standard pour monitorer
+#
+# Prometheus :
+# → Collecte les métriques (CPU, RAM, requêtes/sec, etc.)
+# → Stocke les données en time-series
+# → Permet de créer des alertes
+#
+# Grafana :
+# → Visualise les données de Prometheus
+# → Crée des dashboards
+# → Interface web jolie
+#
+# Pour lancer : docker-compose -f docker-compose.monitoring.yml up -d
+#
+
+version: '3.8'
+
+services:
+  # ===========================================
+  # PROMETHEUS - Collecte des métriques
+  # ===========================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: papier-prometheus
+
+    volumes:
+      # Config Prometheus
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      # Persistance des données
+      - prometheus_data:/prometheus
+
+    ports:
+      - "9090:9090"
+
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.enable-lifecycle'
+
+    networks:
+      - monitoring
+
+    restart: unless-stopped
+
+  # ===========================================
+  # GRAFANA - Dashboards
+  # ===========================================
+  grafana:
+    image: grafana/grafana:latest
+    container_name: papier-grafana
+
+    volumes:
+      - grafana_data:/var/lib/grafana
+
+    environment:
+      # Login par défaut (à changer en prod !)
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=papier123
+      - GF_USERS_ALLOW_SIGN_UP=false
+
+    ports:
+      - "3001:3000"
+
+    depends_on:
+      - prometheus
+
+    networks:
+      - monitoring
+
+    restart: unless-stopped
+
+  # ===========================================
+  # NODE EXPORTER - Métriques système
+  # ===========================================
+  # Collecte les métriques de la machine (CPU, RAM, disque)
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: papier-node-exporter
+
+    ports:
+      - "9100:9100"
+
+    networks:
+      - monitoring
+
+    restart: unless-stopped
+
+networks:
+  monitoring:
+    driver: bridge
+
+volumes:
+  prometheus_data:
+  grafana_data:

@@ -1,0 +1,95 @@
+#
+# ===========================================
+# DOCKER COMPOSE - ORCHESTRATION LOCALE
+# ===========================================
+#
+# C'est quoi Docker Compose ?
+# → Un outil pour gérer PLUSIEURS conteneurs ensemble
+# → Un seul fichier pour décrire toute l'infrastructure
+# → Une commande pour tout lancer : docker-compose up
+#
+# Concepts clés :
+# - services = les conteneurs à lancer
+# - networks = comment les conteneurs communiquent
+# - volumes = persistance des données
+# - depends_on = ordre de démarrage
+#
+
+version: '3.8'
+
+services:
+  # ===========================================
+  # API BACKEND (Node.js)
+  # ===========================================
+  api:
+    # Où trouver le Dockerfile
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.api
+
+    # Nom du conteneur (optionnel mais pratique)
+    container_name: papier-api
+
+    # Variables d'environnement
+    # En DevOps, on configure TOUT via des variables d'env
+    # Jamais de config hardcodée !
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+
+    # Exposer le port 3000 (accessible seulement dans le réseau Docker)
+    expose:
+      - "3000"
+
+    # Réseau interne
+    networks:
+      - papier-network
+
+    # Redémarrage automatique si crash
+    restart: unless-stopped
+
+    # Limite de ressources (important en prod)
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+
+  # ===========================================
+  # NGINX (Frontend + Reverse Proxy)
+  # ===========================================
+  nginx:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.nginx
+
+    container_name: papier-nginx
+
+    # Port accessible depuis l'extérieur
+    # Format: "port_hote:port_conteneur"
+    ports:
+      - "80:80"
+
+    # Dépendance : nginx démarre APRÈS l'API
+    depends_on:
+      - api
+
+    networks:
+      - papier-network
+
+    restart: unless-stopped
+
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+
+# ===========================================
+# RÉSEAU
+# ===========================================
+# Les conteneurs sur le même réseau peuvent se parler
+# par leur nom de service (ex: http://api:3000)
+networks:
+  papier-network:
+    driver: bridge

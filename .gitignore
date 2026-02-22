@@ -1,0 +1,40 @@
+# ===========================================
+# GITIGNORE - Fichiers à ne PAS commit
+# ===========================================
+
+# === NODE.JS ===
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# === ENVIRONNEMENT ===
+# TRÈS IMPORTANT : ne jamais commit les secrets !
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# === DOCKER ===
+# Les données Docker restent locales
+docker-compose.override.yml
+
+# === IDE ===
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# === LOGS ===
+logs/
+*.log
+
+# === BUILD ===
+dist/
+build/
+coverage/
+
+# === MONITORING ===
+# Les données de Prometheus/Grafana sont volumineuses
+monitoring/data/

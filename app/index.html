@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Papier.net - Tous vos papiers sur internet au même endroit</title>
+  <style>
+    /*
+     * CSS simple et moderne
+     * Pas de framework, juste du CSS pur pour comprendre
+     */
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      min-height: 100vh;
+      color: #fff;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      color: #8b8b8b;
+      font-size: 1.1rem;
+    }
+
+    /* Formulaire d'ajout */
+    .add-form {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 1.5rem;
+      border-radius: 12px;
+      margin-bottom: 2rem;
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .add-form input {
+      flex: 1;
+      min-width: 200px;
+      padding: 0.75rem 1rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      color: #fff;
+      font-size: 1rem;
+    }
+
+    .add-form input::placeholder {
+      color: #666;
+    }
+
+    .add-form button {
+      padding: 0.75rem 2rem;
+      background: #4ade80;
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .add-form button:hover {
+      background: #22c55e;
+    }
+
+    /* Liste des papiers */
+    .papiers-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .papier-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+
+    .papier-card:hover {
+      transform: translateX(5px);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .papier-card.fait {
+      opacity: 0.5;
+    }
+
+    .papier-info h3 {
+      font-size: 1.1rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .papier-info .organisme {
+      color: #8b8b8b;
+      font-size: 0.9rem;
+    }
+
+    .papier-info .deadline {
+      color: #f87171;
+      font-size: 0.85rem;
+      margin-top: 0.25rem;
+    }
+
+    .papier-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .btn {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: opacity 0.2s;
+    }
+
+    .btn:hover {
+      opacity: 0.8;
+    }
+
+    .btn-done {
+      background: #4ade80;
+      color: #000;
+    }
+
+    .btn-delete {
+      background: #f87171;
+      color: #000;
+    }
+
+    /* Status badge */
+    .status {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-left: 0.5rem;
+    }
+
+    .status.a_faire {
+      background: #fbbf24;
+      color: #000;
+    }
+
+    .status.fait {
+      background: #4ade80;
+      color: #000;
+    }
+
+    /* Footer avec status API */
+    footer {
+      margin-top: 3rem;
+      text-align: center;
+      color: #666;
+      font-size: 0.85rem;
+    }
+
+    .api-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .api-status .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #f87171;
+    }
+
+    .api-status .dot.online {
+      background: #4ade80;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Papiers.net</h1>
+      <p class="subtitle">Tous vos papiers administratifs sur internet au même endroit</p>
+    </header>
+
+    <!-- Formulaire d'ajout -->
+    <form class="add-form" id="addForm">
+      <input type="text" id="nomInput" placeholder="Nom du papier (ex: Déclaration CAF)" required>
+      <input type="text" id="organismeInput" placeholder="Organisme (ex: caf.fr)" required>
+      <input type="date" id="deadlineInput" placeholder="Deadline">
+      <button type="submit">Ajouter</button>
+    </form>
+
+    <!-- Liste des papiers -->
+    <div class="papiers-list" id="papiersList">
+      <!-- Les papiers seront injectés ici par JavaScript -->
+      <p style="color: #666; text-align: center;">Chargement...</p>
+    </div>
+
+    <footer>
+      <div class="api-status">
+        <span class="dot" id="apiDot"></span>
+        <span id="apiStatusText">Vérification API...</span>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    /**
+     * ===========================================
+     * JAVASCRIPT - LOGIQUE FRONTEND
+     * ===========================================
+     *
+     * Ce code fait le lien entre l'interface et l'API
+     * - Fetch = fonction native pour appeler des APIs
+     * - async/await = façon moderne de gérer l'asynchrone
+     */
+
+    // URL de l'API (changera selon l'environnement)
+    // En local: http://localhost:3000
+    // En prod: sera configuré via le reverse proxy nginx
+    const API_URL = '/api';
+
+    // === FONCTIONS API ===
+
+    // Récupérer tous les papiers
+    async function getPapiers() {
+      const response = await fetch(`${API_URL}/papiers`);
+      return response.json();
+    }
+
+    // Créer un papier
+    async function createPapier(nom, organisme, deadline) {
+      const response = await fetch(`${API_URL}/papiers`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nom, organisme, deadline })
+      });
+      return response.json();
+    }
+
+    // Marquer comme fait
+    async function toggleStatut(id, nouveauStatut) {
+      const response = await fetch(`${API_URL}/papiers/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ statut: nouveauStatut })
+      });
+      return response.json();
+    }
+
+    // Supprimer un papier
+    async function deletePapier(id) {
+      await fetch(`${API_URL}/papiers/${id}`, { method: 'DELETE' });
+    }
+
+    // === AFFICHAGE ===
+
+    // Afficher la liste des papiers
+    async function renderPapiers() {
+      const list = document.getElementById('papiersList');
+
+      try {
+        const papiers = await getPapiers();
+
+        if (papiers.length === 0) {
+          list.innerHTML = '<p style="color: #666; text-align: center;">Aucun papier pour le moment</p>';
+          return;
+        }
+
+        list.innerHTML = papiers.map(papier => `
+          <div class="papier-card ${papier.statut}">
+            <div class="papier-info">
+              <h3>
+                ${papier.nom}
+                <span class="status ${papier.statut}">
+                  ${papier.statut === 'fait' ? 'Fait' : 'À faire'}
+                </span>
+              </h3>
+              <p class="organisme">${papier.organisme}</p>
+              ${papier.deadline ? `<p class="deadline">Deadline: ${papier.deadline}</p>` : ''}
+            </div>
+            <div class="papier-actions">
+              <button class="btn btn-done" onclick="handleToggle(${papier.id}, '${papier.statut}')">
+                ${papier.statut === 'fait' ? 'Refaire' : 'Fait !'}
+              </button>
+              <button class="btn btn-delete" onclick="handleDelete(${papier.id})">
+                Supprimer
+              </button>
+            </div>
+          </div>
+        `).join('');
+      } catch (error) {
+        list.innerHTML = '<p style="color: #f87171; text-align: center;">Erreur de connexion à l\'API</p>';
+      }
+    }
+
+    // === HANDLERS ===
+
+    // Gérer le formulaire d'ajout
+    document.getElementById('addForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const nom = document.getElementById('nomInput').value;
+      const organisme = document.getElementById('organismeInput').value;
+      const deadline = document.getElementById('deadlineInput').value;
+
+      await createPapier(nom, organisme, deadline || null);
+
+      // Reset form et refresh
+      e.target.reset();
+      renderPapiers();
+    });
+
+    // Toggle statut
+    async function handleToggle(id, currentStatut) {
+      const nouveauStatut = currentStatut === 'fait' ? 'a_faire' : 'fait';
+      await toggleStatut(id, nouveauStatut);
+      renderPapiers();
+    }
+
+    // Supprimer
+    async function handleDelete(id) {
+      if (confirm('Supprimer ce papier ?')) {
+        await deletePapier(id);
+        renderPapiers();
+      }
+    }
+
+    // === HEALTH CHECK ===
+
+    async function checkApiHealth() {
+      const dot = document.getElementById('apiDot');
+      const text = document.getElementById('apiStatusText');
+
+      try {
+        const response = await fetch(`${API_URL.replace('/api', '')}/health`);
+        const data = await response.json();
+
+        if (data.status === 'ok') {
+          dot.classList.add('online');
+          text.textContent = 'API connectée';
+        }
+      } catch {
+        dot.classList.remove('online');
+        text.textContent = 'API hors ligne';
+      }
+    }
+
+    // === INIT ===
+    renderPapiers();
+    checkApiHealth();
+
+    // Refresh le health check toutes les 30 secondes
+    setInterval(checkApiHealth, 30000);
+  </script>
+</body>
+</html>

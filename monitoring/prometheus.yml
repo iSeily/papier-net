@@ -1,0 +1,38 @@
+#
+# ===========================================
+# PROMETHEUS - Configuration
+# ===========================================
+#
+# Ce fichier dit à Prometheus :
+# - Quoi scraper (collecter)
+# - À quelle fréquence
+# - Où trouver les endpoints de métriques
+#
+
+global:
+  # Fréquence de collecte par défaut
+  scrape_interval: 15s
+
+  # Fréquence d'évaluation des règles d'alertes
+  evaluation_interval: 15s
+
+# ===========================================
+# CIBLES À SCRAPER
+# ===========================================
+scrape_configs:
+  # Prometheus se scrape lui-même (meta !)
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Métriques système via Node Exporter
+  - job_name: 'node'
+    static_configs:
+      - targets: ['node-exporter:9100']
+
+  # Notre API (si on ajoute un endpoint /metrics)
+  # Pour l'instant commenté car pas encore implémenté
+  # - job_name: 'papier-api'
+  #   static_configs:
+  #     - targets: ['api:3000']
+  #   metrics_path: '/metrics'

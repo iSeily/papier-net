@@ -1,0 +1,30 @@
+#
+# ===========================================
+# DOCKERFILE - NGINX (FRONTEND + REVERSE PROXY)
+# ===========================================
+#
+# Ce conteneur fait 2 choses :
+# 1. Sert les fichiers statiques (HTML, CSS, JS)
+# 2. Redirige les requêtes /api vers le backend
+#
+
+# Image officielle Nginx, version alpine (légère)
+FROM nginx:alpine
+
+# Supprimer la config par défaut de Nginx
+RUN rm /etc/nginx/conf.d/default.conf
+
+# Copier notre configuration personnalisée
+COPY app/nginx.conf /etc/nginx/conf.d/default.conf
+
+# Copier les fichiers du frontend
+COPY app/index.html /usr/share/nginx/html/
+
+# Le port 80 est déjà exposé par l'image nginx de base
+EXPOSE 80
+
+# Health check pour Nginx
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:80/ || exit 1
+
+# Nginx démarre automatiquement (défini dans l'image de base)

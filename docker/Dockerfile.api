@@ -1,0 +1,69 @@
+#
+# ===========================================
+# DOCKERFILE - API BACKEND
+# ===========================================
+#
+# C'est quoi un Dockerfile ?
+# → Une recette pour créer une "image" Docker
+# → L'image contient tout ce qu'il faut pour faire tourner l'app
+# → Comme ça, l'app tourne pareil partout (dev, staging, prod)
+#
+# Commandes principales :
+# - FROM = image de base
+# - WORKDIR = dossier de travail
+# - COPY = copier des fichiers
+# - RUN = exécuter une commande
+# - EXPOSE = déclarer un port
+# - CMD = commande au démarrage du conteneur
+#
+
+# === ÉTAPE 1 : Image de base ===
+# On part d'une image Node.js officielle
+# "alpine" = version légère de Linux (5 MB vs 100+ MB)
+# "20" = version de Node.js
+FROM node:20-alpine
+
+# === ÉTAPE 2 : Dossier de travail ===
+# Toutes les commandes suivantes s'exécutent dans ce dossier
+WORKDIR /app
+
+# === ÉTAPE 3 : Copier les dépendances ===
+# On copie d'abord package.json SEUL
+# Pourquoi ? Pour profiter du cache Docker
+# Si package.json n'a pas changé, Docker réutilise le cache
+COPY app/api/package*.json ./
+
+# === ÉTAPE 4 : Installer les dépendances ===
+# npm ci = comme npm install mais plus rapide et déterministe
+# --only=production = n'installe pas les devDependencies
+RUN npm ci --only=production
+
+# === ÉTAPE 5 : Copier le code ===
+# Maintenant on copie le reste du code
+COPY app/api/ ./
+
+# === ÉTAPE 6 : Créer un utilisateur non-root ===
+# Sécurité : ne jamais faire tourner une app en root
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001
+
+# Changer le propriétaire des fichiers
+RUN chown -R nodejs:nodejs /app
+
+# Utiliser cet utilisateur
+USER nodejs
+
+# === ÉTAPE 7 : Déclarer le port ===
+# EXPOSE ne fait pas grand chose, c'est juste de la documentation
+# Le vrai mapping de ports se fait dans docker-compose
+EXPOSE 3000
+
+# === ÉTAPE 8 : Health check ===
+# Docker vérifie régulièrement que le conteneur est en bonne santé
+# Si le health check échoue, Docker peut redémarrer le conteneur
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:3000/health || exit 1
+
+# === ÉTAPE 9 : Commande de démarrage ===
+# CMD = la commande exécutée quand le conteneur démarre
+CMD ["node", "server.js"]
