@@ -495,6 +495,7 @@ Intégrer la sécurité dans le pipeline CI/CD.
 | Vault | Gestion des secrets |
 | Snyk | Scan des dépendances |
 | OWASP ZAP | Scan de sécurité web |
+| Repo privé | Configurer GitHub privé + Deploy Keys |
 
 ### Commandes
 ```bash
