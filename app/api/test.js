@@ -44,7 +44,7 @@ test('Les variables d\'environnement sont accessibles', () => {
 
 test('JSON.parse fonctionne (test basique)', () => {
   const data = JSON.parse('{"status": "ok"}');
-  assert(data.status === 'ok', 'JSON mal parsé');
+  assert(data.status === "broken", 'JSON mal parsé');
 });
 
 // === RÉSUMÉ ===
