@@ -15,8 +15,6 @@
 # - depends_on = ordre de démarrage
 #
 
-version: '3.8'
-
 services:
   # ===========================================
   # API BACKEND (Node.js)
