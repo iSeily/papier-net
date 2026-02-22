@@ -2,7 +2,22 @@
 
 > Tous vos papiers administratifs au même endroit
 
-Ce projet est conçu pour apprendre le DevOps en 3 jours.
+Ce projet est conçu pour apprendre le DevOps rapidement.
+
+## Parcours DevOps
+
+| Jour | Thème | Outils | Statut |
+|------|-------|--------|--------|
+| 1 | Conteneurisation | Docker, Docker Compose | ✅ Fait |
+| 2 | CI/CD | GitHub Actions | ✅ Fait |
+| 3 | Cloud + Monitoring | AWS EC2, Prometheus, Grafana | ✅ Fait |
+| 4 | Infrastructure as Code | Terraform | ⏳ À faire |
+| 5 | Configuration Management | Ansible | ⏳ À faire |
+| 6 | CI/CD Avancé | Jenkins | ⏳ À faire |
+| 7 | Orchestration | Kubernetes (K8s) | ⏳ À faire |
+| 8 | Logging centralisé | ELK Stack (Elasticsearch, Logstash, Kibana) | ⏳ À faire |
+| 9 | Sécurité DevSecOps | Vault, Trivy, OWASP | ⏳ À faire |
+| 10 | Projet final | Tout assembler | ⏳ À faire |
 
 ---
 
@@ -229,6 +244,312 @@ sudo chmod 666 /var/run/docker.sock  # Linux
 
 ---
 
+---
+
+## Jour 4 : Terraform (Infrastructure as Code)
+
+### Objectif
+Créer et gérer l'infrastructure AWS avec du code au lieu de cliquer dans la console.
+
+### Ce que tu vas apprendre
+- Déclarer des ressources cloud en code (EC2, VPC, Security Groups)
+- Versionner ton infrastructure avec Git
+- Détruire et recréer l'infra en une commande
+
+### Concepts clés
+| Concept | Description |
+|---------|-------------|
+| `provider` | Le cloud cible (AWS, GCP, Azure) |
+| `resource` | Une ressource à créer (EC2, S3, etc.) |
+| `terraform plan` | Prévisualiser les changements |
+| `terraform apply` | Appliquer les changements |
+| `terraform destroy` | Tout supprimer |
+| `state` | Fichier qui stocke l'état actuel |
+
+### Commandes principales
+```bash
+# Initialiser Terraform
+terraform init
+
+# Voir ce qui va être créé
+terraform plan
+
+# Créer l'infrastructure
+terraform apply
+
+# Détruire l'infrastructure
+terraform destroy
+```
+
+---
+
+## Jour 5 : Ansible (Configuration Management)
+
+### Objectif
+Configurer automatiquement des serveurs (installer Docker, déployer l'app, etc.)
+
+### Ce que tu vas apprendre
+- Écrire des playbooks (scripts de configuration)
+- Configurer plusieurs serveurs en parallèle
+- Idempotence : relancer sans casser
+
+### Concepts clés
+| Concept | Description |
+|---------|-------------|
+| `inventory` | Liste des serveurs à configurer |
+| `playbook` | Script de configuration (YAML) |
+| `task` | Une action à effectuer |
+| `role` | Groupe de tasks réutilisables |
+| `handler` | Action déclenchée par un changement |
+
+### Commandes principales
+```bash
+# Tester la connexion aux serveurs
+ansible all -m ping -i inventory.ini
+
+# Lancer un playbook
+ansible-playbook -i inventory.ini playbook.yml
+
+# Mode dry-run (sans appliquer)
+ansible-playbook -i inventory.ini playbook.yml --check
+```
+
+### Exemple de playbook
+```yaml
+- name: Configurer le serveur Papier.net
+  hosts: webservers
+  become: yes
+  tasks:
+    - name: Installer Docker
+      yum:
+        name: docker
+        state: present
+
+    - name: Démarrer Docker
+      service:
+        name: docker
+        state: started
+        enabled: yes
+```
+
+---
+
+## Jour 6 : Jenkins (CI/CD Avancé)
+
+### Objectif
+Installer et configurer Jenkins, l'outil CI/CD le plus utilisé en entreprise.
+
+### Ce que tu vas apprendre
+- Installer Jenkins avec Docker
+- Créer des pipelines (Jenkinsfile)
+- Intégrer avec GitHub et Docker
+
+### Concepts clés
+| Concept | Description |
+|---------|-------------|
+| `Jenkinsfile` | Pipeline as Code |
+| `agent` | Où exécuter le pipeline |
+| `stage` | Étape du pipeline |
+| `step` | Action dans une étape |
+| `Blue Ocean` | Interface moderne de Jenkins |
+
+### Lancer Jenkins
+```bash
+docker run -d \
+  --name jenkins \
+  -p 8080:8080 \
+  -p 50000:50000 \
+  -v jenkins_home:/var/jenkins_home \
+  jenkins/jenkins:lts
+```
+
+### Exemple de Jenkinsfile
+```groovy
+pipeline {
+    agent any
+    stages {
+        stage('Test') {
+            steps {
+                sh 'npm test'
+            }
+        }
+        stage('Build') {
+            steps {
+                sh 'docker build -t papier-api .'
+            }
+        }
+        stage('Deploy') {
+            steps {
+                sh 'docker-compose up -d'
+            }
+        }
+    }
+}
+```
+
+---
+
+## Jour 7 : Kubernetes (Orchestration)
+
+### Objectif
+Déployer l'app sur Kubernetes pour la scalabilité et la haute disponibilité.
+
+### Ce que tu vas apprendre
+- Pods, Deployments, Services
+- Scaling automatique
+- Rolling updates (zero downtime)
+
+### Concepts clés
+| Concept | Description |
+|---------|-------------|
+| `Pod` | Plus petite unité (1+ conteneurs) |
+| `Deployment` | Gère les replicas de Pods |
+| `Service` | Expose les Pods (load balancing) |
+| `Ingress` | Routage HTTP externe |
+| `ConfigMap` | Configuration externe |
+| `Secret` | Données sensibles |
+
+### Commandes principales
+```bash
+# Installer minikube (Kubernetes local)
+brew install minikube
+minikube start
+
+# Commandes kubectl
+kubectl get pods                    # Lister les pods
+kubectl get services                # Lister les services
+kubectl apply -f deployment.yml     # Déployer
+kubectl logs <pod-name>             # Voir les logs
+kubectl scale deployment api --replicas=3  # Scaler
+```
+
+### Exemple de Deployment
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: papier-api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: papier-api
+  template:
+    metadata:
+      labels:
+        app: papier-api
+    spec:
+      containers:
+      - name: api
+        image: papier-api:latest
+        ports:
+        - containerPort: 3000
+```
+
+---
+
+## Jour 8 : ELK Stack (Logging centralisé)
+
+### Objectif
+Centraliser et analyser les logs de tous les services.
+
+### Ce que tu vas apprendre
+- Collecter les logs avec Logstash/Filebeat
+- Stocker dans Elasticsearch
+- Visualiser avec Kibana
+
+### Concepts clés
+| Outil | Rôle |
+|-------|------|
+| Elasticsearch | Base de données de logs |
+| Logstash | Collecte et transforme les logs |
+| Kibana | Interface de visualisation |
+| Filebeat | Agent léger de collecte |
+
+### Lancer ELK
+```bash
+# docker-compose.elk.yml à créer
+docker-compose -f docker-compose.elk.yml up -d
+
+# Accès
+# Kibana : http://localhost:5601
+# Elasticsearch : http://localhost:9200
+```
+
+---
+
+## Jour 9 : DevSecOps (Sécurité)
+
+### Objectif
+Intégrer la sécurité dans le pipeline CI/CD.
+
+### Ce que tu vas apprendre
+- Scanner les vulnérabilités des images Docker
+- Gérer les secrets avec Vault
+- Audit des dépendances
+
+### Outils
+| Outil | Rôle |
+|-------|------|
+| Trivy | Scan de vulnérabilités Docker |
+| Vault | Gestion des secrets |
+| Snyk | Scan des dépendances |
+| OWASP ZAP | Scan de sécurité web |
+
+### Commandes
+```bash
+# Scanner une image Docker
+trivy image papier-api:latest
+
+# Audit npm
+npm audit
+
+# Lancer Vault
+docker run -d --name vault -p 8200:8200 vault
+```
+
+---
+
+## Jour 10 : Projet Final
+
+### Objectif
+Assembler tout ce qu'on a appris dans une architecture complète.
+
+### Architecture cible
+```
+GitHub Push
+    ↓
+Jenkins/GitHub Actions (CI/CD)
+    ↓
+Build Docker → Scan Trivy → Tests
+    ↓
+Terraform (provision infra)
+    ↓
+Ansible (configure serveurs)
+    ↓
+Kubernetes (déploie l'app)
+    ↓
+Prometheus + Grafana (monitoring)
+    ↓
+ELK Stack (logging)
+    ↓
+Vault (secrets)
+```
+
+### Checklist DevOps
+- [ ] Code versionné (Git)
+- [ ] Tests automatisés
+- [ ] CI/CD pipeline
+- [ ] Infrastructure as Code (Terraform)
+- [ ] Configuration as Code (Ansible)
+- [ ] Conteneurisation (Docker)
+- [ ] Orchestration (Kubernetes)
+- [ ] Monitoring (Prometheus/Grafana)
+- [ ] Logging (ELK)
+- [ ] Sécurité (Trivy, Vault)
+
+---
+
 ## Ressources pour aller plus loin
 
 - [Docker Documentation](https://docs.docker.com/)
@@ -236,3 +557,8 @@ sudo chmod 666 /var/run/docker.sock  # Linux
 - [AWS Free Tier](https://aws.amazon.com/free/)
 - [Prometheus](https://prometheus.io/docs/)
 - [Grafana](https://grafana.com/docs/)
+- [Terraform](https://developer.hashicorp.com/terraform/docs)
+- [Ansible](https://docs.ansible.com/)
+- [Jenkins](https://www.jenkins.io/doc/)
+- [Kubernetes](https://kubernetes.io/docs/)
+- [HashiCorp Vault](https://developer.hashicorp.com/vault/docs)
