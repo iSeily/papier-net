@@ -1,0 +1,6 @@
+# Fichiers Terraform à ne jamais commiter
+.terraform/          # Dossier créé par terraform init (lourd)
+.terraform.lock.hcl  # Lock file (peut être commité selon les équipes)
+terraform.tfstate    # STATE : contient l'état réel de l'infra (peut contenir des secrets !)
+terraform.tfstate.backup
+*.tfvars             # Variables avec vraies valeurs (credentials, etc.)
