@@ -131,6 +131,99 @@ docker-compose -f docker-compose.monitoring.yml down
 
 ---
 
+## Jour 4 : Terraform
+
+### C'est quoi Terraform ?
+Terraform permet de créer et gérer l'infrastructure cloud avec du code.
+Au lieu de cliquer dans la console AWS, tu écris des fichiers `.tf` et Terraform fait le reste.
+L'infra devient versionnable, reproductible et partageable.
+
+### Structure des fichiers
+```
+terraform/
+├── main.tf        # Les ressources à créer (EC2, Security Group)
+├── variables.tf   # Les variables réutilisables
+├── outputs.tf     # Les infos affichées après le apply (IP, URL, etc.)
+└── .gitignore     # Exclut .terraform/ et terraform.tfstate
+```
+
+### Les 4 commandes essentielles
+```bash
+# 1. Initialiser le projet (télécharge le provider AWS)
+terraform init
+
+# 2. Prévisualiser les changements AVANT d'agir
+terraform plan
+
+# 3. Créer / modifier l'infrastructure
+terraform apply
+
+# 4. Tout supprimer
+terraform destroy
+```
+
+### Lire les symboles du terraform plan
+| Symbole | Signification |
+|---------|---------------|
+| `+` vert | Ressource qui va être créée |
+| `~` orange | Ressource qui va être modifiée |
+| `-` rouge | Ressource qui va être supprimée |
+
+### Concepts clés
+| Concept | Description |
+|---------|-------------|
+| `provider` | Le cloud cible (AWS, GCP, Azure) |
+| `resource` | Une ressource à créer (EC2, Security Group, etc.) |
+| `variable` | Valeur réutilisable et configurable |
+| `output` | Info affichée après le apply (IP, URL, etc.) |
+| `user_data` | Script exécuté au démarrage du serveur |
+| `state` | Fichier qui mémorise l'état réel de l'infra |
+
+### Leçons apprises
+- **Ne jamais commiter `.terraform/`** → contient les providers (700MB+)
+- **Ne jamais commiter `terraform.tfstate`** → contient des données sensibles (IPs, IDs)
+- Ces deux dossiers doivent être dans `.gitignore`
+- Si tu commites par erreur un gros fichier :
+```bash
+# Retirer du cache git sans supprimer les fichiers locaux
+git rm -r --cached terraform/.terraform/
+git rm -r --cached terraform/terraform.tfstate
+git commit -m "Fix: retirer fichiers sensibles du repo"
+git push
+```
+
+### Connexion SSH sur Ubuntu vs Amazon Linux
+- **Amazon Linux** → user : `ec2-user`
+- **Ubuntu** → user : `ubuntu`
+```bash
+# Ubuntu
+ssh -i ~/.ssh/papier-net-key2 ubuntu@IP_EC2
+
+# Amazon Linux
+ssh -i ~/.ssh/papier-net-key.pem ec2-user@IP_EC2
+```
+
+### Créer et importer une clé SSH
+```bash
+# Générer une nouvelle clé RSA
+ssh-keygen -t rsa -b 4096 -f ~/.ssh/papier-net-key2 -N ""
+
+# Afficher la clé publique à importer dans AWS
+cat ~/.ssh/papier-net-key2.pub
+
+# Vérifier le fingerprint SHA256
+ssh-keygen -l -f ~/.ssh/papier-net-key2.pub
+
+# Vérifier le fingerprint MD5 (format AWS)
+ssh-keygen -l -E md5 -f ~/.ssh/papier-net-key2.pub
+```
+
+### URLs actives
+- **Nouvelle instance Terraform** : http://13.38.89.153
+- **SSH** : `ssh -i ~/.ssh/papier-net-key2 ubuntu@13.38.89.153`
+
+---
+
 ## Commandes utiles
 
 ```bash
@@ -174,3 +267,4 @@ docker system prune -a
 | Reverse Proxy | Nginx |
 | Monitoring | Prometheus + Grafana |
 | Secrets | GitHub Secrets, IAM |
+| Infrastructure as Code | Terraform |
